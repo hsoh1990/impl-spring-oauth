@@ -41,6 +41,7 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
         </dependency>
+
         <!-- util -->
         <dependency>
             <groupId>org.projectlombok</groupId>
