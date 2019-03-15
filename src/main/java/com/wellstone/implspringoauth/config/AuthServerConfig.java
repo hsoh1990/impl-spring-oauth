@@ -34,7 +34,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
      */
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.passwordEncoder(passwordEncoder)
+        security
+                .passwordEncoder(passwordEncoder)
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("isAuthenticated()");
     }
@@ -45,7 +46,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory()
+        clients
+                .inMemory()
                 .withClient("client_id")
                 .secret(passwordEncoder.encode("client_secret"))
                 .authorizedGrantTypes("password", "refresh_token")
@@ -55,9 +57,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .refreshTokenValiditySeconds(6 * 10 * 60);
     }
 
+    /**
+     * 인증 서버 endpoints 정의
+     * SecurityConfig 의 authenticationManager 주입
+     * SecurityConfig 의 TokenStore 주입 (InMemoryTokenStore)
+     * AccountService 주입
+     */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager)
+        endpoints
+                .authenticationManager(authenticationManager)
                 .userDetailsService(accountService)
                 .tokenStore(tokenStore);
 
