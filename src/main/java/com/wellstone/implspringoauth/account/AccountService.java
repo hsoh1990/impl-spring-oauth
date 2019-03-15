@@ -15,15 +15,20 @@ public class AccountService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Account saveAccount(Account account) {
-        account.setPassword(this.passwordEncoder.encode(account.getPassword()));
-        return this.accountRepository.save(account);
-    }
-
     @Override
     public UserDetails loadUserByUsername(String accountId) throws UsernameNotFoundException {
         final Account account = accountRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new UsernameNotFoundException(accountId));
         return new AccountAdapter(account);
+    }
+
+    public Account saveAccount(Account account) {
+        account.setPassword(this.passwordEncoder.encode(account.getPassword()));
+        return this.accountRepository.save(account);
+    }
+
+    public Account getAccount(String accountId) {
+        return accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new UsernameNotFoundException(accountId));
     }
 }

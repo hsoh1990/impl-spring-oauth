@@ -4,6 +4,7 @@ import com.wellstone.implspringoauth.account.Account;
 import com.wellstone.implspringoauth.account.AccountRepository;
 import com.wellstone.implspringoauth.account.AccountRole;
 import com.wellstone.implspringoauth.account.AccountService;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Configuration
 public class ApplicationConfig {
 
@@ -48,7 +50,8 @@ public class ApplicationConfig {
                             .email("admin@test.io")
                             .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                             .build();
-                    accountRepository.save(admin);
+                    Account account = accountService.saveAccount(admin);
+                    log.info(account.toString());
                 }
             }
         };
