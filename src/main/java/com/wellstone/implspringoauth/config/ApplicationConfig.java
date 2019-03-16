@@ -24,6 +24,7 @@ public class ApplicationConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+//        스프링5 업데이트하면서 생긴 encoder(jwt사용시 문제 발생)
 //        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
         return NoOpPasswordEncoder.getInstance();
 
