@@ -4,6 +4,7 @@ import com.wellstone.implspringoauth.account.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -11,6 +12,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
@@ -35,6 +38,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
 
     /**
+     * oauth_client_details table을 사용하기 위해 서비스 정의
+     * clients.withClientDetails(JdbcClientDetailsService())로 사용
+     */
+    @Bean
+    @Primary
+    public JdbcClientDetailsService JdbcClientDetailsService() {
+        return new JdbcClientDetailsService(dataSource);
+    }
+
+    /**
      * 인증한 사용자의 토큰을 저장하는 방식 설정
      * JwtTokenStore로 사용하면 JWT를 사용
      */
@@ -50,8 +63,17 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
-        jwtAccessTokenConverter.setSigningKey("pub_key");
+        jwtAccessTokenConverter.setSigningKey("wellstone");
         return jwtAccessTokenConverter;
+    }
+
+    @Bean
+    @Primary
+    public DefaultTokenServices tokenService() {
+        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        defaultTokenServices.setTokenStore(tokenStore());
+        defaultTokenServices.setSupportRefreshToken(true);
+        return defaultTokenServices;
     }
 
     /**
@@ -70,19 +92,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     /**
      * client detail service를 정의하는 구성 클래스
-     * Client detail 초기화(withClient), 기존 저장소 참조 정의(withClientDetails)
+     * Client detail 초기화(withClient), 저장소 참조 정의(withClientDetails)
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients
-                .inMemory()
-                .withClient("client_id")
-                .secret(passwordEncoder.encode("client_secret"))
-                .authorizedGrantTypes("password", "refresh_token")
-                .scopes("read", "write")
-                .resourceIds("oauth")
-                .accessTokenValiditySeconds(10 * 60)
-                .refreshTokenValiditySeconds(6 * 10 * 60);
+                .withClientDetails(JdbcClientDetailsService());
     }
 
     /**
