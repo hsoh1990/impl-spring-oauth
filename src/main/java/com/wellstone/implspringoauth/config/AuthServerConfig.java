@@ -36,7 +36,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     DataSource dataSource;
 
-
     /**
      * oauth_client_details table을 사용하기 위해 서비스 정의
      * clients.withClientDetails(JdbcClientDetailsService())로 사용
