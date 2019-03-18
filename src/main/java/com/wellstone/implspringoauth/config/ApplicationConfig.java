@@ -11,7 +11,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -23,10 +23,8 @@ public class ApplicationConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-//        스프링5 업데이트하면서 생긴 encoder(jwt사용시 문제 발생)
-//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        return NoOpPasswordEncoder.getInstance();
-
+//        스프링5 업데이트하면서 생긴 encoder factories(client_secret -> {noop}client_secret 로 수정)
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     @Bean
@@ -50,6 +48,7 @@ public class ApplicationConfig {
                     Account admin = Account.builder()
                             .accountId("admin")
                             .password("admin")
+                            .name("admin")
                             .email("admin@test.io")
                             .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                             .build();

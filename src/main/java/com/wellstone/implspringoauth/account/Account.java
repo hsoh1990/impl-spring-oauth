@@ -1,8 +1,12 @@
 package com.wellstone.implspringoauth.account;
 
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -18,17 +22,38 @@ public class Account {
     @Column(name = "idx")
     private Long idx;
 
-    @Column(name = "accountId", unique = true)
+    @NotNull
+    @Column(name = "accountId", nullable = false, unique = true)
     private String accountId;
 
+    @NotNull
     @Column(name = "password")
     private String password;
 
-    @Column(name = "email", unique = true)
+    @NotNull
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @NotNull
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name ="company")
+
+    @Column(name = "company")
     private String company;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "join_date", nullable = false)
+    private Date joinDate;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "modify_date", nullable = false)
+    private Date updateDate;
+
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

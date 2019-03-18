@@ -1,7 +1,5 @@
 package com.wellstone.implspringoauth.common;
 
-import com.wellstone.implspringoauth.common.ResponseData;
-import com.wellstone.implspringoauth.common.ResponseDataType;
 import com.wellstone.implspringoauth.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
