@@ -1,11 +1,13 @@
 package com.wellstone.implspringoauth.account;
 
+import com.wellstone.implspringoauth.oauthclient.OAuthClient;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -16,6 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "account")
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,4 +61,8 @@ public class Account {
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<AccountRole> roles;
+
+    @OneToMany(targetEntity = OAuthClient.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_idx")
+    private Collection<OAuthClient> oAuthClients;
 }

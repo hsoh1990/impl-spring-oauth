@@ -18,7 +18,7 @@ public class GlobalExceptionController {
 
         ResponseData responseData = ResponseData.builder()
                 .message(e.getMessage())
-                .type(ResponseDataType.FAILED_CODE)
+                .type(ResponseDataType.FAILED)
                 .build();
 
         return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
