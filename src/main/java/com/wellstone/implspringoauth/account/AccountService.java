@@ -2,13 +2,17 @@ package com.wellstone.implspringoauth.account;
 
 import com.wellstone.implspringoauth.account.DTO.AccountQueryDTO;
 import com.wellstone.implspringoauth.account.DTO.AccountRegisterDTO;
+import com.wellstone.implspringoauth.account.DTO.AccountUpdateDTO;
+import com.wellstone.implspringoauth.exception.BadValidationException;
 import com.wellstone.implspringoauth.exception.DuplicatedException;
 import com.wellstone.implspringoauth.exception.NotFoundException;
-import com.wellstone.implspringoauth.util.Utils;
-import org.hibernate.query.criteria.internal.predicate.BooleanExpressionPredicate;
+import com.wellstone.implspringoauth.oauthclient.OAuthClient;
+import com.wellstone.implspringoauth.oauthclient.OAuthClientRepository;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,8 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
-import java.util.Set;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -27,6 +31,9 @@ public class AccountService implements UserDetailsService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private OAuthClientRepository oAuthClientRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -38,16 +45,21 @@ public class AccountService implements UserDetailsService {
         return new AccountAdapter(account);
     }
 
-    public Account saveAccount(AccountRegisterDTO registerDto) {
+    public Account insertAccount(AccountRegisterDTO registerDto) {
         checkDuplicatedAccountId(registerDto.getAccountId());
         checkDuplicatedEmail(registerDto.getEmail());
 
         Account account = modelMapper.map(registerDto, Account.class);
 
-        account.setPassword(this.passwordEncoder.encode(registerDto.getPassword()));
+        account.setPassword(passwordEncoder.encode(registerDto.getPassword()));
         account.setRoles(Set.of(AccountRole.USER));
 
-        return this.accountRepository.save(account);
+        return accountRepository.save(account);
+    }
+
+    public Page<Account> getAccountList(Pageable pageable, AccountQueryDTO queryDTO) {
+        Specifications<Account> spec = generateDynamicSpec(queryDTO);
+        return accountRepository.findAll(spec, pageable);
     }
 
     public Account getAccount(Long idx) {
@@ -55,34 +67,81 @@ public class AccountService implements UserDetailsService {
                 .orElseThrow(() -> new NotFoundException("Not Found account by idx = " + idx));
     }
 
-    public Account getAccountByQuery(AccountQueryDTO searchDTO) {
+    public Account getAccountByQuery(AccountQueryDTO queryDTO) {
+        Specifications<Account> spec = generateDynamicSpec(queryDTO);
+        return accountRepository.findOne(spec)
+                .orElseThrow(() -> new NotFoundException("Not Found account by query = " + queryDTO.toString()));
+    }
+
+    public Account updateAccount(Long idx, AccountUpdateDTO updateDTO) {
+        Account account = accountRepository.findById(idx)
+                .orElseThrow(() -> new NotFoundException("Not Found account by idx = " + idx));
+
+        if (!StringUtils.isEmpty(updateDTO.getName())) {
+            account.setName(updateDTO.getName());
+        }
+        if (!StringUtils.isEmpty(updateDTO.getEmail())) {
+            account.setEmail(updateDTO.getEmail());
+        }
+        if (!StringUtils.isEmpty(updateDTO.getCompany())) {
+            account.setCompany(updateDTO.getCompany());
+        }
+        if(!StringUtils.isEmpty(updateDTO.getUpdatePassword())){
+            boolean matches = passwordEncoder.matches(updateDTO.getCurrentPassword(), account.getPassword());
+            if(matches){
+                account.setPassword(passwordEncoder.encode(updateDTO.getUpdatePassword()));
+            } else {
+                throw new BadValidationException("현재 Password가 일치하지 않습니다.");
+            }
+        }
+
+        return accountRepository.save(account);
+    }
+
+
+    public Account deleteAccount(Long idx) {
+        Account account = accountRepository.findById(idx)
+                .orElseThrow(() -> new NotFoundException("Not Found account by idx = " + idx));
+        accountRepository.delete(account);
+        return account;
+    }
+
+    private Specifications<Account> generateDynamicSpec(AccountQueryDTO queryDTO) {
         Specifications<Account> spec = Specifications.where(null);
 
-        if(!StringUtils.isEmpty(searchDTO.getAccountId())){
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("accountId"), searchDTO.getAccountId()));
+        if (!StringUtils.isEmpty(queryDTO.getAccountId())) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("accountId"), queryDTO.getAccountId()));
         }
 
-        if(!StringUtils.isEmpty(searchDTO.getEmail())){
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("email"), searchDTO.getEmail()));
+        if (!StringUtils.isEmpty(queryDTO.getName())) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("name"), queryDTO.getName()));
         }
 
-        return accountRepository.findOne(spec)
-                .orElseThrow(() -> new NotFoundException("Not Found account by query = " + searchDTO.toString()));
+        if (!StringUtils.isEmpty(queryDTO.getEmail())) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("email"), queryDTO.getEmail()));
+        }
+
+        if (!StringUtils.isEmpty(queryDTO.getCompany())) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("company"), queryDTO.getCompany()));
+        }
+        return spec;
     }
 
     private void checkDuplicatedEmail(String accountEmail) {
         Optional<Account> byAccount;
 
         byAccount = accountRepository.findByEmail(accountEmail);
-        if(byAccount.isPresent()){
+        if (byAccount.isPresent()) {
             throw new DuplicatedException("duplicated email = " + accountEmail);
         }
     }
 
     private void checkDuplicatedAccountId(String accountId) {
         Optional<Account> byAccount = accountRepository.findByAccountId(accountId);
-        if(byAccount.isPresent()){
+        if (byAccount.isPresent()) {
             throw new DuplicatedException("duplicated account id = " + accountId);
         }
     }
+
+
 }

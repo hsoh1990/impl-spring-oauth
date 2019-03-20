@@ -1,9 +1,6 @@
 package com.wellstone.implspringoauth.account;
 
-import com.wellstone.implspringoauth.account.DTO.AccountQueryValidator;
-import com.wellstone.implspringoauth.account.DTO.AccountRegisterDTO;
-import com.wellstone.implspringoauth.account.DTO.AccountResponseDTO;
-import com.wellstone.implspringoauth.account.DTO.AccountQueryDTO;
+import com.wellstone.implspringoauth.account.DTO.*;
 import com.wellstone.implspringoauth.common.ResponseData;
 import com.wellstone.implspringoauth.common.ResponseDataType;
 import com.wellstone.implspringoauth.exception.BadValidationException;
@@ -12,18 +9,19 @@ import com.wellstone.implspringoauth.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.sql.Time;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
@@ -40,14 +38,17 @@ public class AccountController {
     @Autowired
     AccountQueryValidator accountQueryValidator;
 
+    @Autowired
+    AccountUpdateValidator accountUpdateValidator;
+
     @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity registerAccount(@RequestBody @Valid AccountRegisterDTO registerDTO,
-                                          BindingResult result) {
+    public ResponseEntity insertAccount(@RequestBody @Valid AccountRegisterDTO registerDTO,
+                                        BindingResult result) {
         if (result.hasErrors()) {
             throw new BadValidationException(result.getFieldErrors());
         }
 
-        Account account = accountService.saveAccount(registerDTO);
+        Account account = accountService.insertAccount(registerDTO);
         AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
 
         URI createUri = linkTo(AccountController.class).slash(responseDTO.getIdx()).toUri();
@@ -61,6 +62,32 @@ public class AccountController {
         return ResponseEntity.created(createUri).body(responseData);
     }
 
+    @GetMapping
+    public ResponseEntity getAccountList(Pageable pageable,
+                                         @ModelAttribute @Valid AccountQueryDTO queryDTO,
+                                         BindingResult result) {
+        if (result.hasErrors()) {
+            throw new BadValidationException(result.getFieldErrors());
+        }
+
+        Page<Account> accountPage = accountService.getAccountList(pageable, queryDTO);
+        List<AccountResponseDTO> content = accountPage.getContent()
+                .stream()
+                .map(account -> modelMapper.map(account, AccountResponseDTO.class))
+                .collect(Collectors.toList());
+
+        final PageImpl<AccountResponseDTO> responseDTOS = new PageImpl<>(content, pageable, accountPage.getTotalElements());
+
+        ResponseData responseData = ResponseData.builder()
+                .type(ResponseDataType.SUCCESS)
+                .result(responseDTOS)
+                .message("Get account list")
+                .time(new Date())
+                .build();
+
+        return ResponseEntity.ok().body(responseData);
+    }
+
     @GetMapping(value = "/{idx:[0-9]++}")
     public ResponseEntity getAccount(@PathVariable Long idx) {
         Account account = accountService.getAccount(idx);
@@ -69,7 +96,7 @@ public class AccountController {
         ResponseData responseData = ResponseData.builder()
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
-                .message("Get account by idx")
+                .message("Get account by idx = " + idx)
                 .time(new Date())
                 .build();
 
@@ -77,24 +104,62 @@ public class AccountController {
     }
 
     @GetMapping(value = "/query")
-    public ResponseEntity getAccountByQuery(@ModelAttribute @Valid AccountQueryDTO searchDTO,
+    public ResponseEntity getAccountByQuery(@ModelAttribute @Valid AccountQueryDTO queryDTO,
                                             BindingResult result) {
         if (result.hasErrors()) {
             throw new BadValidationException(result.getFieldErrors());
         }
 
-        accountQueryValidator.validate(searchDTO, result);
+        accountQueryValidator.validate(queryDTO, result);
         if (result.hasErrors()) {
             throw new BadValidationException(result.getAllErrors());
         }
 
-        Account account = accountService.getAccountByQuery(searchDTO);
+        Account account = accountService.getAccountByQuery(queryDTO);
         AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
 
         ResponseData responseData = ResponseData.builder()
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("Get account by query")
+                .time(new Date())
+                .build();
+
+        return ResponseEntity.ok().body(responseData);
+    }
+
+    @PutMapping(value = "/{idx:[0-9]++}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity updateAccount(@PathVariable Long idx,
+                                        @RequestBody @Valid AccountUpdateDTO updateDTO,
+                                        BindingResult result){
+
+        accountUpdateValidator.validate(updateDTO, result);
+        if (result.hasErrors()) {
+            throw new BadValidationException(result.getAllErrors());
+        }
+
+        Account account = accountService.updateAccount(idx, updateDTO);
+        AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
+
+        ResponseData responseData = ResponseData.builder()
+                .type(ResponseDataType.SUCCESS)
+                .result(responseDTO)
+                .message("Update account by idx = " + idx)
+                .time(new Date())
+                .build();
+
+        return ResponseEntity.ok().body(responseData);
+    }
+
+    @DeleteMapping(value ="/{idx:[0-9]++}")
+    public ResponseEntity deleteAccount(@PathVariable Long idx){
+        Account account = accountService.deleteAccount(idx);
+        AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
+
+        ResponseData responseData = ResponseData.builder()
+                .type(ResponseDataType.SUCCESS)
+                .result(responseDTO)
+                .message("Delete account by idx = " + idx)
                 .time(new Date())
                 .build();
 

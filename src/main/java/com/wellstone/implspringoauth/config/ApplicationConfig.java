@@ -1,6 +1,8 @@
 package com.wellstone.implspringoauth.config;
 
-import com.wellstone.implspringoauth.account.*;
+import com.wellstone.implspringoauth.account.Account;
+import com.wellstone.implspringoauth.account.AccountRepository;
+import com.wellstone.implspringoauth.account.AccountRole;
 import com.wellstone.implspringoauth.oauthclient.OAuthClient;
 import com.wellstone.implspringoauth.oauthclient.OAuthClientRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import java.util.List;
 import java.util.Set;

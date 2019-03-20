@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -41,7 +42,6 @@ public class Account {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-
     @Column(name = "company")
     private String company;
 
@@ -62,7 +62,10 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Set<AccountRole> roles;
 
-    @OneToMany(targetEntity = OAuthClient.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = OAuthClient.class,
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @JoinColumn(name = "account_idx")
-    private Collection<OAuthClient> oAuthClients;
+    private List<OAuthClient> oAuthClients;
 }
