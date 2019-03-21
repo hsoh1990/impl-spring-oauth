@@ -1,6 +1,7 @@
 package com.wellstone.implspringoauth.account;
 
 import com.wellstone.implspringoauth.account.DTO.*;
+import com.wellstone.implspringoauth.common.FieldRuleValidator;
 import com.wellstone.implspringoauth.common.ResponseData;
 import com.wellstone.implspringoauth.common.ResponseDataType;
 import com.wellstone.implspringoauth.exception.BadValidationException;
@@ -103,7 +104,7 @@ public class AccountController {
             throw new BadValidationException(result.getFieldErrors());
         }
 
-        accountValidator.queryValidate(queryDTO, result);
+        FieldRuleValidator.validate(queryDTO, result);
         if (result.hasErrors()) {
             throw new BadValidationException(result.getAllErrors());
         }
@@ -125,7 +126,7 @@ public class AccountController {
                                         @RequestBody @Valid AccountUpdateDTO updateDTO,
                                         BindingResult result){
 
-        accountValidator.updateValidate(updateDTO, result);
+        FieldRuleValidator.validate(updateDTO, result);
         if (result.hasErrors()) {
             throw new BadValidationException(result.getAllErrors());
         }
