@@ -169,7 +169,7 @@ public class OAuthClientControllerTest extends BaseControllerTest {
         //Given
 
         //When
-        ResultActions resultActions = mockMvc.perform(put("/api/oauth/clients/{clientId}", this.oAuthClient.getClientId())
+        ResultActions resultActions = mockMvc.perform(delete("/api/oauth/clients/{clientId}", this.oAuthClient.getClientId())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                 .header(HttpHeaders.AUTHORIZATION, getBearerToken()));
         //Then

@@ -109,7 +109,6 @@ public class OAuthClientController {
         return ResponseEntity.ok().body(responseData);
     }
 
-    //TODO delete
     @DeleteMapping(value = "/{clientId}")
     public ResponseEntity deleteOAuthClient(@PathVariable String clientId){
         OAuthClient oAuthClient = oAuthClientService.deleteOAuthClient(clientId);
