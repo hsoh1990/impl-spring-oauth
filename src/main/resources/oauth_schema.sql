@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `impl_oauth`.`oauth_client_details`
   `resource_ids`            VARCHAR(255)  NULL DEFAULT NULL,
   `scope`                   VARCHAR(255)  NULL DEFAULT NULL,
   `web_server_redirect_uri` VARCHAR(255)  NULL DEFAULT NULL,
+  `name`                    VARCHAR(45)   NULL DEFAULT NULL,
   `account_idx`             BIGINT(20)    NOT NULL,
   PRIMARY KEY (`client_id`),
   INDEX                     `fk_oauth_client_details_account1_idx` (`account_idx` ASC)

@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountRegisterDTO {
+public class AccountInsertDTO {
     @NotBlank
     @Size(min = 3, max = 30)
     private String accountId;

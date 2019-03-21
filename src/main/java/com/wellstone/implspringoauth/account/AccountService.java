@@ -1,15 +1,13 @@
 package com.wellstone.implspringoauth.account;
 
 import com.wellstone.implspringoauth.account.DTO.AccountQueryDTO;
-import com.wellstone.implspringoauth.account.DTO.AccountRegisterDTO;
+import com.wellstone.implspringoauth.account.DTO.AccountInsertDTO;
 import com.wellstone.implspringoauth.account.DTO.AccountUpdateDTO;
 import com.wellstone.implspringoauth.exception.BadValidationException;
 import com.wellstone.implspringoauth.exception.DuplicatedException;
 import com.wellstone.implspringoauth.exception.NotFoundException;
-import com.wellstone.implspringoauth.oauthclient.OAuthClient;
 import com.wellstone.implspringoauth.oauthclient.OAuthClientRepository;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Service
@@ -45,7 +42,7 @@ public class AccountService implements UserDetailsService {
         return new AccountAdapter(account);
     }
 
-    public Account insertAccount(AccountRegisterDTO registerDto) {
+    public Account insertAccount(AccountInsertDTO registerDto) {
         checkDuplicatedAccountId(registerDto.getAccountId());
         checkDuplicatedEmail(registerDto.getEmail());
 
@@ -97,7 +94,6 @@ public class AccountService implements UserDetailsService {
 
         return accountRepository.save(account);
     }
-
 
     public Account deleteAccount(Long idx) {
         Account account = accountRepository.findById(idx)

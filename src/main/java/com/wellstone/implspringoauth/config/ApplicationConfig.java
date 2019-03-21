@@ -46,12 +46,13 @@ public class ApplicationConfig {
             @Override
             public void run(ApplicationArguments args) throws Exception {
                 List<Account> accountRepositoryAll = accountRepository.findAll();
+                Account account = null;
                 if(accountRepositoryAll.isEmpty()){
                     Account admin = Account.builder()
                             .accountId("admin").password(passwordEncoder().encode("admin")).name("admin").email("admin@test.io")
                             .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                             .build();
-                    Account account = accountRepository.save(admin);
+                    account = accountRepository.save(admin);
                     log.info(account.toString());
                 }
 
@@ -66,7 +67,8 @@ public class ApplicationConfig {
                             .authorities("ROLE_YOUR_CLIENT")
                             .accessTokenValidity(36000)
                             .refreshTokenValidity(2592000)
-                            .account(accountRepository.findByAccountId("admin").get())
+                            .name("adminClient")
+                            .account(account)
                             .build();
                     OAuthClient saveOAuthClient = oAuthClientRepository.save(oAuthClient);
                     log.info(saveOAuthClient.toString());

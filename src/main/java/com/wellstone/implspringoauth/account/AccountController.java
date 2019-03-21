@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,19 +35,16 @@ public class AccountController {
     AccountService accountService;
 
     @Autowired
-    AccountQueryValidator accountQueryValidator;
-
-    @Autowired
-    AccountUpdateValidator accountUpdateValidator;
+    AccountValidator accountValidator;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity insertAccount(@RequestBody @Valid AccountRegisterDTO registerDTO,
+    public ResponseEntity insertAccount(@RequestBody @Valid AccountInsertDTO insertDTO,
                                         BindingResult result) {
         if (result.hasErrors()) {
             throw new BadValidationException(result.getFieldErrors());
         }
 
-        Account account = accountService.insertAccount(registerDTO);
+        Account account = accountService.insertAccount(insertDTO);
         AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
 
         URI createUri = linkTo(AccountController.class).slash(responseDTO.getIdx()).toUri();
@@ -56,7 +52,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("create account")
-                .time(new Date())
                 .build();
 
         return ResponseEntity.created(createUri).body(responseData);
@@ -82,7 +77,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTOS)
                 .message("Get account list")
-                .time(new Date())
                 .build();
 
         return ResponseEntity.ok().body(responseData);
@@ -97,7 +91,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("Get account by idx = " + idx)
-                .time(new Date())
                 .build();
 
         return ResponseEntity.ok().body(responseData);
@@ -110,7 +103,7 @@ public class AccountController {
             throw new BadValidationException(result.getFieldErrors());
         }
 
-        accountQueryValidator.validate(queryDTO, result);
+        accountValidator.queryValidate(queryDTO, result);
         if (result.hasErrors()) {
             throw new BadValidationException(result.getAllErrors());
         }
@@ -122,7 +115,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("Get account by query")
-                .time(new Date())
                 .build();
 
         return ResponseEntity.ok().body(responseData);
@@ -133,7 +125,7 @@ public class AccountController {
                                         @RequestBody @Valid AccountUpdateDTO updateDTO,
                                         BindingResult result){
 
-        accountUpdateValidator.validate(updateDTO, result);
+        accountValidator.updateValidate(updateDTO, result);
         if (result.hasErrors()) {
             throw new BadValidationException(result.getAllErrors());
         }
@@ -145,7 +137,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("Update account by idx = " + idx)
-                .time(new Date())
                 .build();
 
         return ResponseEntity.ok().body(responseData);
@@ -160,7 +151,6 @@ public class AccountController {
                 .type(ResponseDataType.SUCCESS)
                 .result(responseDTO)
                 .message("Delete account by idx = " + idx)
-                .time(new Date())
                 .build();
 
         return ResponseEntity.ok().body(responseData);
@@ -175,7 +165,6 @@ public class AccountController {
         ResponseData responseData = ResponseData.builder()
                 .type(ResponseDataType.FAILED)
                 .result(e.getInformation())
-                .time(new Date())
                 .build();
 
         return ResponseEntity.badRequest().body(responseData);
@@ -187,7 +176,6 @@ public class AccountController {
         ResponseData responseData = ResponseData.builder()
                 .type(ResponseDataType.FAILED)
                 .result(e.getInformation())
-                .time(new Date())
                 .build();
 
         return ResponseEntity.badRequest().body(responseData);
@@ -199,7 +187,6 @@ public class AccountController {
         ResponseData responseData = ResponseData.builder()
                 .type(ResponseDataType.FAILED)
                 .result(e.getInformation())
-                .time(new Date())
                 .build();
 
         return ResponseEntity.badRequest().body(responseData);

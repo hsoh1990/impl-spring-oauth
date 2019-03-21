@@ -48,6 +48,11 @@ public class OAuthClient {
     @Column(name = "autoapprove")
     private String autoapprove;
 
+    //custom attribute
+    @Column(name = "name")
+    private String name;
+
+    //custom attribute
     @ManyToOne(targetEntity = Account.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "account_idx")
     Account account;

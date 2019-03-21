@@ -27,7 +27,7 @@ public class Account {
     private Long idx;
 
     @NotNull
-    @Column(name = "accountId", nullable = false, unique = true)
+    @Column(name = "account_id", nullable = false, unique = true)
     private String accountId;
 
     @NotNull
