@@ -24,7 +24,6 @@ public class OAuthClientInsertDTO {
     private int accessTokenValidity = 36000;
     @Builder.Default
     private int refreshTokenValidity = 2592000;
-    private String additionalInfo;
     private String autoapprove;
 
     @NotBlank
